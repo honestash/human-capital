@@ -604,7 +604,7 @@
     if (!button) return;
     event.preventDefault();
     event.stopImmediatePropagation();
-    savePdf(button);
+    window.print();    if (button.id === "mobile-print-button") {      const mobileReport = document.getElementById("print-report");      mobileReport.classList.remove("is-mobile-report");      mobileReport.setAttribute("aria-hidden", "true");    }
   }, true);
 })();
 
