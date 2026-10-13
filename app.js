@@ -584,7 +584,7 @@
         },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
         pagebreak: { mode: ["css"] }
-      }).from(report).save();
+      }).from(stage).save();
       if (trigger.id === "mobile-print-button") {
         const mobileReport = document.getElementById("print-report");
         mobileReport.classList.remove("is-mobile-report");
