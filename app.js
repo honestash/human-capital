@@ -510,3 +510,85 @@
     }
   });
 })();
+
+
+(() => {
+  let libraryPromise;
+  const loadPdf = () => {
+    if (window.html2pdf) return Promise.resolve();
+    if (libraryPromise) return libraryPromise;
+    libraryPromise = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
+      script.integrity = "sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLus+V+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==";
+      script.crossOrigin = "anonymous";
+      script.referrerPolicy = "no-referrer";
+      script.onload = resolve;
+      script.onerror = () => reject(new Error("PDF 생성 도구를 불러오지 못했습니다."));
+      document.head.append(script);
+    });
+    return libraryPromise;
+  };
+
+  const printRules = () => {
+    const rules = [];
+    for (const sheet of document.styleSheets) {
+      try {
+        for (const rule of sheet.cssRules) {
+          if (rule.conditionText === "print") {
+            for (const item of rule.cssRules) if (item.type !== CSSRule.PAGE_RULE) rules.push(item.cssText);
+          }
+        }
+      } catch {}
+    }
+    return rules.join("\n");
+  };
+
+  async function savePdf() {
+    const buttons = [...document.querySelectorAll("#print-button, #view-report-button")];
+    const labels = buttons.map((button) => button.textContent);
+    let stage;
+    buttons.forEach((button) => { button.disabled = true; button.textContent = "PDF 생성 중…"; });
+    try {
+      await loadPdf();
+      stage = document.createElement("div");
+      stage.id = "pdf-export-stage";
+      stage.style.cssText = "position:fixed;left:0;top:0;width:794px;padding:53px 60px;box-sizing:border-box;background:#fff;visibility:hidden;z-index:-1";
+      const report = document.getElementById("print-report").cloneNode(true);
+      report.id = "pdf-export-report";
+      report.style.setProperty("display", "block", "important");
+      report.style.width = "100%";
+      report.removeAttribute("aria-hidden");
+      report.querySelectorAll(".mobile-report-actions").forEach((item) => item.remove());
+      const style = document.createElement("style");
+      style.textContent = printRules() + "\n#pdf-export-report .report-footer{position:static}";
+      report.prepend(style);
+      stage.append(report);
+      document.body.append(stage);
+      const date = new Date().toISOString().slice(0, 10);
+      await window.html2pdf().set({
+        margin: 0,
+        filename: "인적자본_투자비중_리포트_" + date + ".pdf",
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2, backgroundColor: "#ffffff", windowWidth: 794, scrollX: 0, scrollY: 0 },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        pagebreak: { mode: ["css", "legacy"] }
+      }).from(report).save();
+    } catch (error) {
+      const status = document.getElementById("form-status");
+      if (status) status.textContent = (error.message || "PDF 생성에 실패했습니다.") + " 인쇄 창을 엽니다.";
+      window.print();
+    } finally {
+      stage?.remove();
+      buttons.forEach((button, index) => { button.disabled = false; button.textContent = labels[index]; });
+    }
+  }
+
+  window.addEventListener("click", (event) => {
+    const button = event.target.closest("#print-button, #view-report-button");
+    if (!button) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    savePdf();
+  }, true);
+})();
