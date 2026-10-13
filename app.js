@@ -574,7 +574,7 @@
         html2canvas: {
           scale: 2,
           backgroundColor: "#ffffff",
-          windowWidth: 794,
+          windowWidth: 1200,
           scrollX: 0,
           scrollY: 0,
           onclone: (doc) => {
