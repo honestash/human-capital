@@ -435,12 +435,12 @@
     $("has-spouse").checked = true;
     toggleSpouse();
     setValues({
-      "self-birth-year": 1984, "self-education": 3, "self-gross-income": 7200, "self-retire": 60, "self-work-end": 65,
-      "spouse-birth-year": 1986, "spouse-gross-income": 4800, "spouse-retire": 60, "spouse-work-end": 63,
+      "self-birth-year": 1976, "self-education": 3, "self-gross-income": 5000, "self-retire": 60, "self-work-end": 65,
+      "spouse-birth-year": 1978, "spouse-gross-income": 3600, "spouse-retire": 60, "spouse-work-end": 63,
       "gamma": 7,
-      "dc-balance": 35000, "dc-equity": 30,
-      "irp-balance": 20000, "irp-equity": 45,
-      "other-balance": 65000, "other-equity": 40,
+      "dc-balance": 1500, "dc-equity": 30,
+      "irp-balance": 1000, "irp-equity": 45,
+      "other-balance": 3500, "other-equity": 40,
     });
   });
   $("reset-button").addEventListener("click", () => {
