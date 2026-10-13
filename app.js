@@ -592,3 +592,9 @@
     savePdf();
   }, true);
 })();
+
+
+for (const id of ["print-button", "view-report-button"]) {
+  const button = document.getElementById(id);
+  if (button) button.textContent = "PDF 다운로드";
+}
