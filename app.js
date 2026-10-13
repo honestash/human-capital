@@ -456,3 +456,57 @@
   toggleSpouse();
   showError("");
 })();
+
+
+(() => {
+  const mobileStyle = document.createElement("style");
+  mobileStyle.textContent = `@media (max-width: 880px) {
+    #print-report.is-mobile-report { position: fixed; z-index: 1000; inset: 0; display: block; overflow-y: auto; padding: 14px; background: #fff; color: #1d2d42; overscroll-behavior: contain; }
+    .mobile-report-actions { position: sticky; z-index: 2; top: -14px; display: flex; justify-content: space-between; gap: 9px; margin: -14px -14px 14px; padding: 10px 14px; border-bottom: 1px solid #d9e1df; background: #fff; }
+    .mobile-report-actions button { min-height: 40px; padding: 0 14px; border: 1px solid #173b63; border-radius: 3px; background: #fff; color: #173b63; font: inherit; font-weight: 700; }
+    .mobile-report-actions button:last-child { background: #173b63; color: #fff; }
+  }
+  @media print { .mobile-report-actions { display: none !important; } }
+  `;
+  document.head.append(mobileStyle);
+
+  document.addEventListener("click", (event) => {
+    const trigger = event.target.closest("#print-button, #view-report-button");
+    if (!trigger || !window.matchMedia("(max-width: 880px)").matches) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    const report = document.getElementById("print-report");
+    if (!report) return window.print();
+    report.classList.add("is-mobile-report");
+    report.setAttribute("aria-hidden", "false");
+
+    if (!report.querySelector(".mobile-report-actions")) {
+      const actions = document.createElement("div");
+      actions.className = "mobile-report-actions";
+      const close = document.createElement("button");
+      close.type = "button";
+      close.textContent = "닫기";
+      close.addEventListener("click", () => {
+        report.classList.remove("is-mobile-report");
+        report.setAttribute("aria-hidden", "true");
+        trigger.focus();
+      });
+      const print = document.createElement("button");
+      print.type = "button";
+      print.textContent = "인쇄 · PDF 저장";
+      print.addEventListener("click", () => window.print());
+      actions.append(close, print);
+      report.prepend(actions);
+      close.focus();
+    }
+  }, true);
+
+  document.addEventListener("keydown", (event) => {
+    const report = document.getElementById("print-report");
+    if (event.key === "Escape" && report?.classList.contains("is-mobile-report")) {
+      report.classList.remove("is-mobile-report");
+      report.setAttribute("aria-hidden", "true");
+    }
+  });
+})();
