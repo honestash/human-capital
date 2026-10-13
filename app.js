@@ -519,8 +519,8 @@
     if (libraryPromise) return libraryPromise;
     libraryPromise = new Promise((resolve, reject) => {
       const script = document.createElement("script");
-      script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
-      script.integrity = "sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLus+V+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==";
+            script.src = "https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js";
+      
       script.crossOrigin = "anonymous";
       script.referrerPolicy = "no-referrer";
       script.onload = resolve;
