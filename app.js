@@ -571,7 +571,17 @@
         margin: 0,
         filename: "인적자본_투자비중_리포트_" + date + ".pdf",
         image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2, backgroundColor: "#ffffff", windowWidth: 794, scrollX: 0, scrollY: 0 },
+        html2canvas: {
+          scale: 2,
+          backgroundColor: "#ffffff",
+          windowWidth: 794,
+          scrollX: 0,
+          scrollY: 0,
+          onclone: (doc) => {
+            const exportStage = doc.getElementById("pdf-export-stage");
+            if (exportStage) exportStage.style.visibility = "visible";
+          },
+        },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
         pagebreak: { mode: ["css"] }
       }).from(stage).save();
