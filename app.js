@@ -553,7 +553,7 @@
       await loadPdf();
       stage = document.createElement("div");
       stage.id = "pdf-export-stage";
-      stage.style.cssText = "position:fixed;left:0;top:0;width:794px;padding:53px 60px;box-sizing:border-box;background:#fff;visibility:hidden;z-index:-1";
+      stage.style.cssText = "position:fixed;inset:0 auto auto 0;margin:0;width:794px;min-height:1123px;padding:53px 60px;box-sizing:border-box;background:#fff;visibility:visible;z-index:2147483647;pointer-events:none";
       const report = document.getElementById("print-report").cloneNode(true);
       report.id = "pdf-export-report";
       report.classList.remove("is-mobile-report");
