@@ -450,8 +450,7 @@
       showError("");
     }, 0);
   });
-  $("print-button").addEventListener("click", () => window.print());
-  $("view-report-button").addEventListener("click", () => window.print());
+  /* PDF export handlers are registered below. */
 
   toggleSpouse();
   showError("");
@@ -494,8 +493,9 @@
       });
       const print = document.createElement("button");
       print.type = "button";
-      print.textContent = "인쇄 · PDF 저장";
-      print.addEventListener("click", () => window.print());
+      print.id = "mobile-print-button";
+      print.textContent = "PDF 다운로드";
+      
       actions.append(close, print);
       report.prepend(actions);
       close.focus();
@@ -544,8 +544,8 @@
     return rules.join("\n");
   };
 
-  async function savePdf() {
-    const buttons = [...document.querySelectorAll("#print-button, #view-report-button")];
+  async function savePdf(trigger) {
+    const buttons = [...document.querySelectorAll("#print-button, #view-report-button, #mobile-print-button")];
     const labels = buttons.map((button) => button.textContent);
     let stage;
     buttons.forEach((button) => { button.disabled = true; button.textContent = "PDF 생성 중…"; });
@@ -556,12 +556,13 @@
       stage.style.cssText = "position:fixed;left:0;top:0;width:794px;padding:53px 60px;box-sizing:border-box;background:#fff;visibility:hidden;z-index:-1";
       const report = document.getElementById("print-report").cloneNode(true);
       report.id = "pdf-export-report";
+      report.classList.remove("is-mobile-report");
       report.style.setProperty("display", "block", "important");
       report.style.width = "100%";
       report.removeAttribute("aria-hidden");
       report.querySelectorAll(".mobile-report-actions").forEach((item) => item.remove());
       const style = document.createElement("style");
-      style.textContent = printRules() + "\n#pdf-export-report .report-footer{position:static}";
+      style.textContent = printRules() + "\n#pdf-export-stage, #pdf-export-report { box-sizing: border-box; }\n#pdf-export-report { width: 100% !important; max-width: none !important; }\n#pdf-export-report .report-income-chart, #pdf-export-report .peer-report { break-inside: auto !important; page-break-inside: auto !important; }\n#pdf-export-report .report-footer { position: static !important; }";
       report.prepend(style);
       stage.append(report);
       document.body.append(stage);
@@ -572,8 +573,13 @@
         image: { type: "jpeg", quality: 0.98 },
         html2canvas: { scale: 2, backgroundColor: "#ffffff", windowWidth: 794, scrollX: 0, scrollY: 0 },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        pagebreak: { mode: ["css", "legacy"] }
-      }).from(report).save();
+        pagebreak: { mode: ["css"] }
+      }).from(stage).save();
+      if (trigger.id === "mobile-print-button") {
+        const mobileReport = document.getElementById("print-report");
+        mobileReport.classList.remove("is-mobile-report");
+        mobileReport.setAttribute("aria-hidden", "true");
+      }
     } catch (error) {
       const status = document.getElementById("form-status");
       if (status) status.textContent = error.message || "PDF 생성에 실패했습니다.";
@@ -584,11 +590,11 @@
   }
 
   window.addEventListener("click", (event) => {
-    const button = event.target.closest("#print-button, #view-report-button");
+    const button = event.target.closest("#print-button, #view-report-button, #mobile-print-button");
     if (!button) return;
     event.preventDefault();
     event.stopImmediatePropagation();
-    savePdf();
+    savePdf(button);
   }, true);
 })();
 
