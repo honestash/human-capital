@@ -576,8 +576,7 @@
       }).from(report).save();
     } catch (error) {
       const status = document.getElementById("form-status");
-      if (status) status.textContent = (error.message || "PDF 생성에 실패했습니다.") + " 인쇄 창을 엽니다.";
-      window.print();
+      if (status) status.textContent = error.message || "PDF 생성에 실패했습니다.";
     } finally {
       stage?.remove();
       buttons.forEach((button, index) => { button.disabled = false; button.textContent = labels[index]; });
