@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f5f1">
+  <title>인적자본 기반 투자비중 상담 도구</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="calculator.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="상담 도구 홈">
+        <span class="brand-mark" aria-hidden="true">H</span>
+        <span><strong>인적자본 상담 도구</strong><small>Lifecycle Allocation</small></span>
+      </a>
+      <div class="topbar-right">
+        <span class="privacy-note"><span class="status-dot"></span> 입력정보 미수집 · 서버 전송 없음</span>
+        <button class="button button-dark" id="print-button" type="button" disabled>리포트 출력</button>
+      </div>
+    </header>
+
+    <main id="top" class="workspace">
+      <aside class="rail" aria-label="상담 단계">
+        <p class="rail-caption">CONSULTATION</p>
+        <a class="rail-link is-active" href="#profile"><span>01</span> 가구와 소득</a>
+        <a class="rail-link" href="#assets"><span>02</span> 금융자산과 배분</a>
+        <a class="rail-link" href="#result"><span>03</span> 결과 리포트</a>
+        <div class="rail-rule"></div>
+        <p class="rail-foot">기준모형<br>국내 소득위험 반영<br>2026년 9월 검토본</p>
+      </aside>
+
+      <section class="main-column">
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">ADVISOR WORKSPACE <span>·</span> MODEL V1.0</p>
+            <h1>인적자본으로 보는<br>주식 투자비중</h1>
+            <p class="lede">현재 금융자산과 앞으로 받을 소득을 함께 반영해 모형상 주식비중을 계산합니다.</p>
+          </div>
+          <button class="button button-quiet" id="sample-button" type="button">예시 불러오기</button>
+        </div>
+
+        <div class="privacy-banner" role="note" aria-label="입력정보 보호 안내">
+          <span class="privacy-banner-mark" aria-hidden="true">✓</span>
+          <div><strong>입력정보를 수집하지 않습니다</strong><span>입력값은 서버로 전송되거나 저장되지 않으며, 현재 브라우저에서만 계산됩니다. 리포트를 인쇄하거나 PDF로 저장하면 결과가 해당 파일에 포함됩니다.</span></div>
+        </div>
+
+        <div class="model-note">
+          <strong>개인 연구용 참고도구</strong>
+          <span>모형과 입력값에 따른 참고 결과입니다. 결과의 확인·해석 및 활용에 관한 최종 책임은 이용자 본인에게 있습니다.</span>
+        </div>
+
+        <form id="consultation-form" novalidate>
+          <section class="form-section" id="profile" aria-labelledby="profile-title">
+            <div class="section-heading">
+              <div><span class="section-index">01</span><h2 id="profile-title">가구와 소득</h2></div>
+              <p>출생연도와 세전 근로소득을 입력하면 나이와 세후소득 추정치가 표시됩니다.</p>
+            </div>
+
+            <div class="person-block">
+              <div class="person-heading"><h3>본인</h3><span>기준 응답자</span></div>
+              <div class="field-grid field-grid-4">
+                <label class="field"><span>출생연도</span><span class="input-wrap"><input id="self-birth-year" type="number" min="1951" max="2006" step="1" required inputmode="numeric" aria-describedby="self-age-output"><em>년</em></span><small class="derived-value" id="self-age-output" aria-live="polite">2026년 기준 나이 —</small></label>
+                <label class="field"><span>학력</span><select id="self-education" required><option value="">선택</option><option value="1">고졸 이하</option><option value="2">전문대 졸업</option><option value="3">대학교 졸업</option><option value="4">대학원 수료·졸업 이상</option></select></label>
+                <label class="field"><span>연간 세전 근로소득</span><span class="input-wrap"><input id="self-gross-income" type="text" inputmode="numeric" autocomplete="off" placeholder="예: 7,200" required aria-describedby="self-net-income"><em>만원</em></span><small class="derived-value" id="self-net-income" aria-live="polite">세후 추정 —</small></label>
+                <label class="field"><span>주된 직장 퇴직 예상 나이</span><span class="input-wrap"><input id="self-retire" type="number" min="20" max="80" step="1" required inputmode="numeric"><em>세</em></span></label>
+                <label class="field"><span>추가 소득활동 종료 나이</span><span class="input-wrap"><input id="self-work-end" type="number" min="20" max="95" step="1" required inputmode="numeric"><em>세</em></span></label>
+                <div class="field field-wide risk-field">
+                  <span>손실 감내 수준</span>
+                  <label class="select-with-hint"><select id="gamma" required>
+                    <option value="10">1년 중 -5% 손실도 부담스럽다 · γ 10</option>
+                    <option value="9">-10% 손실까지 감내 가능 · γ 9</option>
+                    <option value="8">-15% 손실까지 감내 가능 · γ 8</option>
+                    <option value="7" selected>-20% 손실까지 감내 가능 · γ 7</option>
+                    <option value="6">-25% 손실까지 감내 가능 · γ 6</option>
+                    <option value="5">-30% 손실까지 감내 가능 · γ 5</option>
+                    <option value="4">-30% 초과 손실도 감내 가능 · γ 4</option>
+                  </select></label>
+                  <small>선택한 손실 감내 응답을 상대위험회피도 γ로 변환해 계산합니다.</small>
+                </div>
+              </div>
+            </div>
+
+            <div class="spouse-toggle-row">
+              <label class="check-control"><input id="has-spouse" type="checkbox"><span class="check-box" aria-hidden="true"></span><span>배우자 소득 포함</span></label>
+              <span class="subtle">가구 단위 인적자본을 계산할 때 선택</span>
+            </div>
+
+            <div class="person-block spouse-block is-hidden" id="spouse-block" aria-hidden="true">
+              <div class="person-heading"><h3>배우자</h3><span>배우자 학력은 본인 학력을 적용</span></div>
+              <div class="field-grid field-grid-4">
+                <label class="field"><span>출생연도</span><span class="input-wrap"><input id="spouse-birth-year" type="number" min="1951" max="2006" step="1" inputmode="numeric" aria-describedby="spouse-age-output"><em>년</em></span><small class="derived-value" id="spouse-age-output" aria-live="polite">2026년 기준 나이 —</small></label>
+                <label class="field"><span>연간 세전 근로소득</span><span class="input-wrap"><input id="spouse-gross-income" type="text" inputmode="numeric" autocomplete="off" placeholder="예: 4,800" aria-describedby="spouse-net-income"><em>만원</em></span><small class="derived-value" id="spouse-net-income" aria-live="polite">세후 추정 —</small></label>
+                <label class="field"><span>주된 직장 퇴직 예상 나이</span><span class="input-wrap"><input id="spouse-retire" type="number" min="20" max="80" step="1" inputmode="numeric"><em>세</em></span></label>
+                <label class="field"><span>추가 소득활동 종료 나이</span><span class="input-wrap"><input id="spouse-work-end" type="number" min="20" max="95" step="1" inputmode="numeric"><em>세</em></span></label>
+              </div>
+            </div>
+          </section>
+
+          <section class="form-section" id="assets" aria-labelledby="assets-title">
+            <div class="section-heading">
+              <div><span class="section-index">02</span><h2 id="assets-title">금융자산과 배분</h2></div>
+              <p>부동산·부채가 아닌 투자 대상 금융자산을 기준으로 합니다.</p>
+            </div>
+
+            <div class="asset-table-wrap">
+              <table class="asset-table">
+                <thead><tr><th scope="col">계좌·자산</th><th scope="col">보유액</th><th scope="col">현재 주식 비중</th></tr></thead>
+                <tbody>
+                  <tr><th scope="row">DC형 퇴직연금</th><td><label class="input-wrap"><input id="dc-balance" type="number" min="0" step="100" inputmode="numeric" aria-label="DC형 퇴직연금 보유액"><em>만원</em></label></td><td><label class="input-wrap"><input id="dc-equity" type="number" min="0" max="100" step="1" inputmode="numeric" aria-label="DC형 주식 비중"><em>%</em></label></td></tr>
+                  <tr><th scope="row">IRP</th><td><label class="input-wrap"><input id="irp-balance" type="number" min="0" step="100" inputmode="numeric" aria-label="IRP 보유액"><em>만원</em></label></td><td><label class="input-wrap"><input id="irp-equity" type="number" min="0" max="100" step="1" inputmode="numeric" aria-label="IRP 주식 비중"><em>%</em></label></td></tr>
+                  <tr><th scope="row">DC·IRP 외 금융자산</th><td><label class="input-wrap"><input id="other-balance" type="number" min="0" step="100" inputmode="numeric" aria-label="기타 금융자산 보유액"><em>만원</em></label></td><td><label class="input-wrap"><input id="other-equity" type="number" min="0" max="100" step="1" inputmode="numeric" aria-label="기타 금융자산 주식 비중"><em>%</em></label></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="table-footnote">각 계좌의 주식 비중을 입력하면 보유액으로 가중한 가계 실제 주식비중을 계산합니다. W에는 세 계좌의 금융자산을 합산합니다.</p>
+          </section>
+
+          <details class="assumption-details">
+            <summary>계산 가정과 적용 기준</summary>
+            <div class="assumption-body">
+              <div class="assumption-grid">
+                <div><span>실질 주식 기대수익률</span><strong>5.0%</strong></div>
+                <div><span>실질 무위험수익률</span><strong>2.0%</strong></div>
+                <div><span>주식 로그수익률 변동성</span><strong>30.7%</strong></div>
+                <div><span>추가 소득대체율</span><strong>50%</strong></div>
+                <div><span>추가 소득활동 후 대체율</span><strong>40%</strong></div>
+                <div><span>소득흐름 종료연령</span><strong>99세</strong></div>
+              </div>
+              <p>근로소득 경로는 세전소득에서 국세청 근로소득공제와 본인 기본공제 150만원을 반영해 과세표준을 단순 추정하고, 기본 누진세율과 지방소득세를 적용한 세후 추정액으로 시작합니다. 추가 소득활동 기간은 주된 직장 퇴직 시점의 50%, 그 이후는 40% 소득대체율을 적용합니다. 할인계수는 국내 근로·은퇴 소득위험 회귀계수를 적용한 보고서 기준모형입니다.</p>
+              <p class="assumption-warning">세후 추정에는 4대 보험료, 연금보험료·특별공제, 세액공제 및 비과세급여를 반영하지 않아 실제 실수령액과 다를 수 있습니다. <a href="https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?mi=6594&amp;cntntsId=7873" target="_blank" rel="noreferrer">국세청 근로소득 계산 안내</a></p>
+              <p class="assumption-warning">예상수익률·할인율 등 모형 가정은 연구 기준값이며, 상담 중 임의 변경하지 않도록 잠겨 있습니다.</p>
+            </div>
+          </details>
+
+          <div class="form-actions">
+            <p id="form-status" role="status" aria-live="polite">필수 입력을 완료하면 결과가 자동으로 갱신됩니다.</p>
+            <button class="button button-quiet" id="reset-button" type="reset">입력 초기화</button>
+          </div>
+        </form>
+      </section>
+
+      <aside class="result-column" id="result" aria-labelledby="result-title">
+        <div class="result-head">
+          <div><p class="eyebrow">MODEL OUTPUT</p><h2 id="result-title">상담 결과</h2></div>
+          <span id="result-state" class="result-state">입력 대기</span>
+        </div>
+        <div id="empty-state" class="empty-state">
+          <div class="empty-glyph" aria-hidden="true">H + W</div>
+          <p>가구와 자산 정보를 입력하면<br>산출 결과가 여기에 표시됩니다.</p>
+        </div>
+        <div id="results" class="results is-hidden" aria-live="polite">
+          <div class="hero-metric">
+            <span>모형상 적정 주식비중</span>
+            <strong id="recommended-share">—</strong>
+            <small id="capped-note" class="is-hidden">계산값이 100%를 넘어 상한 적용</small>
+          </div>
+          <div class="comparison" aria-label="실제와 모형상 주식 비중 비교">
+            <div class="comparison-row"><span>실제</span><div class="meter"><i id="actual-meter"></i></div><strong id="actual-share">—</strong></div>
+            <div class="comparison-row"><span>모형상</span><div class="meter meter-target"><i id="target-meter"></i></div><strong id="target-share">—</strong></div>
+          </div>
+          <div class="gap-line"><span>실제 대비 차이</span><strong id="gap-share">—</strong></div>
+
+          <div class="result-divider"></div>
+          <div class="metric-list">
+            <div><span>가구 인적자본 H</span><strong id="human-capital">—</strong></div>
+            <div><span>투자 가능 금융자산 W</span><strong id="financial-wealth">—</strong></div>
+            <div><span>인적자본 / 금융자산</span><strong id="h-over-w">—</strong></div>
+          </div>
+
+          <div class="hc-breakdown">
+            <div class="breakdown-heading"><strong>인적자본 구성</strong><span>현재가치</span></div>
+            <div><span>근로성 H<sub>L</sub></span><strong id="h-labor">—</strong></div>
+            <div><span>연금성 H<sub>P</sub></span><strong id="h-pension">—</strong></div>
+          </div>
+          <section class="peer-section" aria-labelledby="peer-title">
+            <div class="peer-heading"><h3 id="peer-title">동일 연령대 비교</h3><strong id="peer-cohort">—</strong></div>
+            <p class="peer-sample" id="peer-sample">동일 연령대 응답자 분포</p>
+            <div id="peer-metrics" class="peer-metrics">
+              <div class="peer-legend"><span><i class="legend-own"></i> 내 결과</span><span><i class="legend-median"></i> 중앙값</span><span><i class="legend-iqr"></i> P25~P75</span></div>
+              <div class="peer-row" data-peer-key="h">
+                <div class="peer-row-heading"><span>가구 H (근로성+연금성)</span><strong id="peer-h-value">—</strong></div>
+                <svg class="peer-chart-svg" id="peer-h-track" viewBox="0 0 400 30" preserveAspectRatio="none" role="img" aria-label="인적자본 동일 연령대 분포 비교"><line class="peer-svg-axis" x1="12" y1="15" x2="388" y2="15"/><rect class="peer-svg-iqr" id="peer-h-iqr" x="106" y="7" width="188" height="16"/><line class="peer-svg-quartile" x1="106" y1="5" x2="106" y2="25"/><line class="peer-svg-quartile" x1="294" y1="5" x2="294" y2="25"/><line class="peer-svg-median" id="peer-h-median-marker" x1="200" y1="3" x2="200" y2="27"/><circle class="peer-svg-own" id="peer-h-marker" cx="200" cy="15" r="6"/></svg>
+                <div class="peer-quantiles"><span>P25 <b id="peer-h-p25">—</b></span><span>중앙값 <b id="peer-h-median">—</b></span><span>P75 <b id="peer-h-p75">—</b></span></div>
+                <small class="peer-position" id="peer-h-position">—</small>
+              </div>
+              <div class="peer-row" data-peer-key="w">
+                <div class="peer-row-heading"><span>금융자산 W</span><strong id="peer-w-value">—</strong></div>
+                <svg class="peer-chart-svg" id="peer-w-track" viewBox="0 0 400 30" preserveAspectRatio="none" role="img" aria-label="금융자산 동일 연령대 분포 비교"><line class="peer-svg-axis" x1="12" y1="15" x2="388" y2="15"/><rect class="peer-svg-iqr" id="peer-w-iqr" x="106" y="7" width="188" height="16"/><line class="peer-svg-quartile" x1="106" y1="5" x2="106" y2="25"/><line class="peer-svg-quartile" x1="294" y1="5" x2="294" y2="25"/><line class="peer-svg-median" id="peer-w-median-marker" x1="200" y1="3" x2="200" y2="27"/><circle class="peer-svg-own" id="peer-w-marker" cx="200" cy="15" r="6"/></svg>
+                <div class="peer-quantiles"><span>P25 <b id="peer-w-p25">—</b></span><span>중앙값 <b id="peer-w-median">—</b></span><span>P75 <b id="peer-w-p75">—</b></span></div>
+                <small class="peer-position" id="peer-w-position">—</small>
+              </div>
+              <div class="peer-row" data-peer-key="actual">
+                <div class="peer-row-heading"><span>현재 주식비중</span><strong id="peer-actual-value">—</strong></div>
+                <svg class="peer-chart-svg" id="peer-actual-track" viewBox="0 0 400 30" preserveAspectRatio="none" role="img" aria-label="현재 주식비중 동일 연령대 분포 비교"><line class="peer-svg-axis" x1="12" y1="15" x2="388" y2="15"/><rect class="peer-svg-iqr" id="peer-actual-iqr" x="106" y="7" width="188" height="16"/><line class="peer-svg-quartile" x1="106" y1="5" x2="106" y2="25"/><line class="peer-svg-quartile" x1="294" y1="5" x2="294" y2="25"/><line class="peer-svg-median" id="peer-actual-median-marker" x1="200" y1="3" x2="200" y2="27"/><circle class="peer-svg-own" id="peer-actual-marker" cx="200" cy="15" r="6"/></svg>
+                <div class="peer-quantiles"><span>P25 <b id="peer-actual-p25">—</b></span><span>중앙값 <b id="peer-actual-median">—</b></span><span>P75 <b id="peer-actual-p75">—</b></span></div>
+                <small class="peer-position" id="peer-actual-position">—</small>
+              </div>
+              <div class="peer-row" data-peer-key="target">
+                <div class="peer-row-heading"><span>모형상 적정비중</span><strong id="peer-target-value">—</strong></div>
+                <svg class="peer-chart-svg" id="peer-target-track" viewBox="0 0 400 30" preserveAspectRatio="none" role="img" aria-label="모형상 적정비중 동일 연령대 분포 비교"><line class="peer-svg-axis" x1="12" y1="15" x2="388" y2="15"/><rect class="peer-svg-iqr" id="peer-target-iqr" x="106" y="7" width="188" height="16"/><line class="peer-svg-quartile" x1="106" y1="5" x2="106" y2="25"/><line class="peer-svg-quartile" x1="294" y1="5" x2="294" y2="25"/><line class="peer-svg-median" id="peer-target-median-marker" x1="200" y1="3" x2="200" y2="27"/><circle class="peer-svg-own" id="peer-target-marker" cx="200" cy="15" r="6"/></svg>
+                <div class="peer-quantiles"><span>P25 <b id="peer-target-p25">—</b></span><span>중앙값 <b id="peer-target-median">—</b></span><span>P75 <b id="peer-target-p75">—</b></span></div>
+                <small class="peer-position" id="peer-target-position">—</small>
+              </div>
+            </div>
+            <p class="peer-footnote" id="peer-footnote">P25~P75는 같은 연령대 응답자의 가운데 50% 범위입니다. 서베이 표본 비교이며 모집단 순위는 아닙니다.</p>
+          </section>
+          <p id="model-message" class="model-message"></p>
+          <button class="button button-report" id="view-report-button" type="button">리포트 인쇄 · PDF 저장</button>
+        </div>
+      </aside>
+    </main>
+
+    <section class="print-report" id="print-report" aria-label="상담 결과 리포트">
+      <div class="print-header">
+        <div><p>HUMAN CAPITAL × LIFECYCLE ALLOCATION</p><h1>인적자본 기반<br>주식 투자비중 분석</h1></div>
+        <div class="report-meta"><span>상담일</span><strong id="report-date">—</strong><span>기준모형</span><strong>국내 소득위험 반영 · 2026.09</strong></div>
+      </div>
+      <div class="report-intro"><strong id="report-client">상담 결과</strong><span id="report-profile">—</span></div>
+      <div class="report-lead"><span>모형상 적정 주식비중</span><strong id="report-recommended">—</strong><small id="report-cap-note"></small></div>
+      <div class="report-comparison">
+        <div><span>현재 주식비중</span><strong id="report-actual">—</strong></div>
+        <div><span>모형상 적정비중</span><strong id="report-target">—</strong></div>
+        <div><span>차이</span><strong id="report-gap">—</strong></div>
+      </div>
+      <div class="report-grid">
+        <section><h2>생애자원 추정</h2><dl>
+          <div><dt>근로성 인적자본 H<sub>L</sub></dt><dd id="report-h-labor">—</dd></div>
+          <div><dt>연금성 인적자본 H<sub>P</sub></dt><dd id="report-h-pension">—</dd></div>
+          <div><dt>가구 인적자본 H</dt><dd id="report-h">—</dd></div>
+          <div><dt>투자 가능 금융자산 W</dt><dd id="report-w">—</dd></div>
+          <div><dt>H / W</dt><dd id="report-ratio">—</dd></div>
+        </dl></section>
+      </div>
+      <section class="report-income-chart" aria-labelledby="report-income-title">
+        <div class="chart-heading"><h2 id="report-income-title">연령별 세후소득 경로 가정</h2><span>만원/년 · 할인 전</span></div>
+        <div class="income-chart-legend"><span><i></i> 본인</span><span id="income-spouse-legend"><i></i> 배우자</span></div>
+        <svg id="report-income-chart" class="income-chart-svg" viewBox="0 0 600 210" preserveAspectRatio="none" role="img" aria-label="나이에 따른 세후 연간소득 예상 경로">
+          <line class="chart-gridline" x1="52" y1="18" x2="584" y2="18"/><line class="chart-gridline" x1="52" y1="80" x2="584" y2="80"/><line class="chart-axis" x1="52" y1="142" x2="584" y2="142"/><line class="chart-axis" x1="52" y1="18" x2="52" y2="142"/>
+          <g id="income-y-axis-labels" aria-hidden="true"></g>
+          <g id="income-transition-markers" aria-hidden="true"></g>
+          <g id="income-change-markers" aria-hidden="true"></g>
+          <text class="chart-x-label" id="income-x-start" x="52" y="194" text-anchor="start">—</text><text class="chart-x-label" id="income-x-mid" x="318" y="194" text-anchor="middle">—</text><text class="chart-x-label" id="income-x-end" x="584" y="194" text-anchor="end">99세</text>
+          <polyline id="income-self-line" class="income-self-line" points=""/><polyline id="income-spouse-line" class="income-spouse-line" points=""/>
+          <circle id="income-self-current" class="income-self-current" r="3.5"/><circle id="income-spouse-current" class="income-spouse-current" r="3.5"/>
+        </svg>
+        <p class="income-chart-note" id="income-chart-note">세후소득을 나이별로 투영한 모형 경로입니다. 실제 임금·세금·퇴직 시점과 다를 수 있습니다.</p>
+      </section>
+      <section class="peer-report">
+        <h2>동일 연령대 비교</h2>
+        <p id="report-peer-cohort">—</p>
+        <div class="report-peer-legend" id="report-peer-legend"><span>● 내 결과</span><span>│ 중앙값</span><span>색 구간 P25~P75</span></div>
+        <div class="report-peer-grid" id="report-peer-grid">
+          <div class="report-peer-row"><strong>가구 H</strong><span id="report-peer-h-own">—</span><svg class="peer-chart-svg" id="report-peer-h-track" viewBox="0 0 400 30" preserveAspectRatio="none" role="img"><line class="peer-svg-axis" x1="12" y1="15" x2="388" y2="15"/><rect class="peer-svg-iqr" id="report-peer-h-iqr" x="106" y="7" width="188" height="16"/><line class="peer-svg-quartile" x1="106" y1="5" x2="106" y2="25"/><line class="peer-svg-quartile" x1="294" y1="5" x2="294" y2="25"/><line class="peer-svg-median" id="report-peer-h-median-marker" x1="200" y1="3" x2="200" y2="27"/><circle class="peer-svg-own" id="report-peer-h-marker" cx="200" cy="15" r="6"/></svg><div class="peer-quantiles"><span>P25 <b id="report-peer-h-p25">—</b></span><span>중앙값 <b id="report-peer-h-median">—</b></span><span>P75 <b id="report-peer-h-p75">—</b></span></div></div>
+          <div class="report-peer-row"><strong>금융자산 W</strong><span id="report-peer-w-own">—</span><svg class="peer-chart-svg" id="report-peer-w-track" viewBox="0 0 400 30" preserveAspectRatio="none" role="img"><line class="peer-svg-axis" x1="12" y1="15" x2="388" y2="15"/><rect class="peer-svg-iqr" id="report-peer-w-iqr" x="106" y="7" width="188" height="16"/><line class="peer-svg-quartile" x1="106" y1="5" x2="106" y2="25"/><line class="peer-svg-quartile" x1="294" y1="5" x2="294" y2="25"/><line class="peer-svg-median" id="report-peer-w-median-marker" x1="200" y1="3" x2="200" y2="27"/><circle class="peer-svg-own" id="report-peer-w-marker" cx="200" cy="15" r="6"/></svg><div class="peer-quantiles"><span>P25 <b id="report-peer-w-p25">—</b></span><span>중앙값 <b id="report-peer-w-median">—</b></span><span>P75 <b id="report-peer-w-p75">—</b></span></div></div>
+          <div class="report-peer-row"><strong>현재 주식비중</strong><span id="report-peer-actual-own">—</span><svg class="peer-chart-svg" id="report-peer-actual-track" viewBox="0 0 400 30" preserveAspectRatio="none" role="img"><line class="peer-svg-axis" x1="12" y1="15" x2="388" y2="15"/><rect class="peer-svg-iqr" id="report-peer-actual-iqr" x="106" y="7" width="188" height="16"/><line class="peer-svg-quartile" x1="106" y1="5" x2="106" y2="25"/><line class="peer-svg-quartile" x1="294" y1="5" x2="294" y2="25"/><line class="peer-svg-median" id="report-peer-actual-median-marker" x1="200" y1="3" x2="200" y2="27"/><circle class="peer-svg-own" id="report-peer-actual-marker" cx="200" cy="15" r="6"/></svg><div class="peer-quantiles"><span>P25 <b id="report-peer-actual-p25">—</b></span><span>중앙값 <b id="report-peer-actual-median">—</b></span><span>P75 <b id="report-peer-actual-p75">—</b></span></div></div>
+          <div class="report-peer-row"><strong>모형상 적정비중</strong><span id="report-peer-target-own">—</span><svg class="peer-chart-svg" id="report-peer-target-track" viewBox="0 0 400 30" preserveAspectRatio="none" role="img"><line class="peer-svg-axis" x1="12" y1="15" x2="388" y2="15"/><rect class="peer-svg-iqr" id="report-peer-target-iqr" x="106" y="7" width="188" height="16"/><line class="peer-svg-quartile" x1="106" y1="5" x2="106" y2="25"/><line class="peer-svg-quartile" x1="294" y1="5" x2="294" y2="25"/><line class="peer-svg-median" id="report-peer-target-median-marker" x1="200" y1="3" x2="200" y2="27"/><circle class="peer-svg-own" id="report-peer-target-marker" cx="200" cy="15" r="6"/></svg><div class="peer-quantiles"><span>P25 <b id="report-peer-target-p25">—</b></span><span>중앙값 <b id="report-peer-target-median">—</b></span><span>P75 <b id="report-peer-target-p75">—</b></span></div></div>
+        </div>
+        <p class="peer-report-note" id="report-peer-note">서베이 응답자 연령대별 P25·중앙값·P75 기준이며, 전체 모집단의 백분위 순위로 해석할 수 없습니다.</p>
+      </section>
+      <p class="report-interpretation" id="report-interpretation">—</p>
+      <footer class="report-footer"><strong>개인 연구용 참고 결과 · 해석 유의</strong><p>본 도구는 개인 연구 목적으로 작성되었으며, 실제 세후소득과 달라질 수 있는 단순 추정과 설문 기반 모형을 사용합니다. 결과의 확인·해석 및 활용, 실제 투자 의사결정에 관한 최종 책임은 이용자 본인에게 있습니다. 4대 보험료와 개인별 공제, 지출·부채·유동성 필요 등은 충분히 반영되지 않았습니다.</p><span>도구는 입력값을 수집·전송·저장하지 않습니다. 인쇄/PDF 저장 시 결과가 해당 파일에 포함됩니다.</span></footer>
+    </section>
+  </div>
+</body>
+</html>
