@@ -494,7 +494,7 @@
       const print = document.createElement("button");
       print.type = "button";
       print.id = "mobile-print-button";
-      print.textContent = "PDF 다운로드";
+      print.textContent = "PDF 출력";
       
       actions.append(close, print);
       report.prepend(actions);
@@ -611,5 +611,5 @@
 
 for (const id of ["print-button", "view-report-button"]) {
   const button = document.getElementById(id);
-  if (button) button.textContent = "PDF 다운로드";
+  if (button) button.textContent = "PDF 출력";
 }
